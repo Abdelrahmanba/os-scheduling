@@ -84,7 +84,13 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="C:/Users/babaa/CLionProjects/Scheduling_Algorithms_Testbench/functions.h">
+			<Option target="Scheduling_Algorithms_Testbench"/>
+		</Unit>
 		<Unit filename="C:/Users/babaa/CLionProjects/Scheduling_Algorithms_Testbench/main.cpp">
+			<Option target="Scheduling_Algorithms_Testbench"/>
+		</Unit>
+		<Unit filename="C:/Users/babaa/CLionProjects/Scheduling_Algorithms_Testbench/textTable.h">
 			<Option target="Scheduling_Algorithms_Testbench"/>
 		</Unit>
 		<Unit filename="C:/Users/babaa/CLionProjects/Scheduling_Algorithms_Testbench/CMakeLists.txt">
