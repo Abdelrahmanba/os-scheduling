@@ -11,8 +11,10 @@ int readIntInput(int, int, std::string);
 void processChoice(int);
 void showProcessesSet();
 void setShellColor(int);
-void printTimeline(std::vector<process>);
-
+template<typename T>
+void printTimeline(std::vector<T>);
+int ejectProcess(int, int, int);
+int ejectIdle(int, int);
 
 
 
