@@ -15,6 +15,10 @@ template<typename T>
 void printTimeline(std::vector<T>);
 int ejectProcess(int, int, int);
 int ejectIdle(int, int);
+void SchedulePriorityWithRR();
+std::vector <std::vector<process>> sortPriorities(std::vector<process> &priority);
+void readChoice();
+
 
 
 

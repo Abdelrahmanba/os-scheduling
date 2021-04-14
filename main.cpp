@@ -75,7 +75,7 @@ public:
     }
 
     process(int id) {
-        const int MAX_ARRIVAL_TIME = 40;
+        const int MAX_ARRIVAL_TIME = 15;
         const int MAX_CPU_BURST_TIME = 10;
         const int MAX_PRIORITY_NO = 5;
         proc_id = id;
@@ -86,7 +86,6 @@ public:
     }
 };
 
-void readChoice();
 
 vector<process> processesList;
 
@@ -178,12 +177,127 @@ void ScheduleRR() {
                 break;
             }
         }
-        if(skipDueNotAvailable){
+        if (skipDueNotAvailable) {
             currentTime += 1;
         }
     }
     printTimeline(slices);
 
+}
+
+void SchedulePriority() {
+    vector<process> priority = processesList;
+    vector<process> executed;
+    //sort based on arrival time
+    sort(priority.begin(), priority.end(), [](auto &&l, auto &&r) { return l.getArrivalTime() < r.getArrivalTime(); });
+    //sort by priority
+    vector <vector<process>> priorities= sortPriorities(priority);
+    int currentTime = priority[0].getArrivalTime();
+    process *activeProcess = &priority[0];
+    int activeProcessPriority = -1;
+    while (executed.size() < processesList.size()) {
+        for (int i = 1; i <= 5; i++) {
+            if (priorities[i].size()) {
+                if (priorities[i][0].getArrivalTime() <= currentTime) {
+                    activeProcess = &priorities[i][0];
+                    activeProcessPriority = i;
+                }
+            }
+        }
+        if (activeProcess == nullptr) {
+            currentTime += 1;
+            continue;
+        }
+        executed.push_back(*activeProcess);
+        currentTime += activeProcess->getCpuBurst();
+        priorities[activeProcessPriority].erase(priorities[activeProcessPriority].begin());
+        activeProcessPriority = -1;
+        activeProcess = nullptr;
+    }
+    printTimeline(executed);
+}
+
+vector <vector<process>> sortPriorities(vector<process> &priority) {
+    vector<std::vector<process>> priorities(6);
+    for (process p : priority) {
+        switch (p.getStaticPriority()) {
+            case 1:
+                priorities[1].push_back(p);
+                break;
+            case 2:
+                priorities[2].push_back(p);
+                break;
+            case 3:
+                priorities[3].push_back(p);
+                break;
+            case 4:
+                priorities[4].push_back(p);
+                break;
+            case 5:
+                priorities[5].push_back(p);
+                break;
+        }
+    }
+    return priorities;
+}
+
+void SchedulePriorityWithRR() {
+    const int TIME_SLICE = 4;
+    vector<process> priorityRR = processesList;
+    vector<slice> slices;
+    //sort based on arrival time
+    sort(priorityRR.begin(), priorityRR.end(),[](auto &&l, auto &&r) { return l.getArrivalTime() < r.getArrivalTime(); });
+    vector<vector<process>> priorities = sortPriorities(priorityRR);
+    int currentTime = priorityRR[0].getArrivalTime();
+    process *activeProcess = &priorityRR[0];
+    int activeProcessPriority = -1;
+    while (true) {
+        bool empty = true;
+        activeProcessPriority = -1;
+        for (int i = 1; i <= 5; i++) {
+            if (priorities[i].size()) {
+                if (priorities[i][0].getArrivalTime() <= currentTime) {
+                    activeProcess = &priorities[i][0];
+                    activeProcessPriority = i;
+                }
+            }
+        }
+        if (activeProcess == nullptr) {
+            currentTime += 1;
+            continue;
+        }
+
+        if (activeProcess->getRemExecTime() > TIME_SLICE) {
+            slice s(activeProcess->getProcId(), currentTime, TIME_SLICE);
+            slices.push_back(s);
+            activeProcess->setRemExecTime(activeProcess->getRemExecTime() - TIME_SLICE);
+            currentTime += TIME_SLICE;
+            int newIndex;
+            for (newIndex = 0; newIndex < priorities[activeProcessPriority].size(); newIndex++) {
+                if(priorities[activeProcessPriority][newIndex].getArrivalTime() > currentTime )
+                    break;
+            }
+            newIndex --;
+            rotate(priorities[activeProcessPriority].begin(), priorities[activeProcessPriority].begin() + 1, priorities[activeProcessPriority].begin() + newIndex + 1);
+        } else if (activeProcess->getRemExecTime() <= TIME_SLICE && activeProcess->getRemExecTime() > 0) {
+            slice s(activeProcess->getProcId(), currentTime, activeProcess->getRemExecTime());
+            slices.push_back(s);
+            currentTime += activeProcess->getRemExecTime();
+            activeProcess->setRemExecTime(0);
+            auto it = priorities[activeProcessPriority].begin();
+            priorities[activeProcessPriority].erase(it);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            if (priorities[i].size()!=0) {
+                empty = false;
+            }
+        }
+        if(empty)
+            break;
+        activeProcess = nullptr;
+    }
+    printTimeline(slices);
 }
 
 void processChoice(int choice) {
@@ -201,10 +315,17 @@ void processChoice(int choice) {
             ScheduleRR();
             break;
         case 5:
+            SchedulePriority();
             break;
         case 6:
+            SchedulePriorityWithRR();
             break;
         case 7:
+            ScheduleFCFS();
+            ScheduleSJF();
+            ScheduleRR();
+            SchedulePriority();
+            SchedulePriorityWithRR();
             break;
     }
 }
