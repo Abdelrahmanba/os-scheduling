@@ -3,4 +3,4 @@ project(Scheduling_Algorithms_Testbench)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(Scheduling_Algorithms_Testbench main.cpp functions.h textTable.h)
+add_executable(Scheduling_Algorithms_Testbench main.cpp textTable.h helperFunctions.h helperFunctions.cpp schedulingFunctions.h schedulingFunctions.cpp process.cpp process.h metrics.cpp metrics.h)
