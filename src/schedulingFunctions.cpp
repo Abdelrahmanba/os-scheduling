@@ -1,15 +1,25 @@
 #include <algorithm>
-#include "helperFunctions.h"
-#include "schedulingFunctions.h"
+#include "../include/helperFunctions.h"
+#include "../include/schedulingFunctions.h"
 
 using namespace std;
 
+/**
+ *
+ * @param processesList:  original process list
+ * @returns A vector of scheduled processes.
+ */
 vector<process> ScheduleFCFS(std::vector<process>& processesList) {
     vector<process> FCFS = processesList;
+    //sort based on arraival time
     sort(FCFS.begin(), FCFS.end(), [](auto &&l, auto &&r) { return l.getArrivalTime() < r.getArrivalTime(); });
     return FCFS;
 }
-
+/**
+ *
+ * @param processesList:  original process list
+ * @returns A vector of scheduled processes.
+ */
 vector<process> ScheduleSJF(std::vector<process>& processesList) {
     vector<process> SJF = processesList;
     //sort based on arrival time
@@ -24,6 +34,7 @@ vector<process> ScheduleSJF(std::vector<process>& processesList) {
                 available.push_back(SJF[i]);
             }
         }
+        //if none increment current time
         if (available.size() == 0) {
             currentTime += 1;
             continue;
@@ -39,7 +50,11 @@ vector<process> ScheduleSJF(std::vector<process>& processesList) {
     return executed;
 
 }
-
+/**
+ *
+ * @param processesList:  original process list
+ * @returns A vector of scheduled processes.
+ */
 vector<process> ScheduleRR(std::vector<process>& processesList) {
     const int TIME_SLICE = 4;
     vector<process> RR = processesList;
@@ -48,7 +63,7 @@ vector<process> ScheduleRR(std::vector<process>& processesList) {
     sort(RR.begin(), RR.end(), [](auto &&l, auto &&r) { return l.getArrivalTime() < r.getArrivalTime(); });
     //init max
     int currentTime = RR[0].getArrivalTime();
-    int maxRemTime = RR[0].getRemExecTime(); //10
+    int maxRemTime = RR[0].getRemExecTime();
     bool skipDueNotAvailable = false;
     while (maxRemTime != 0) {
         maxRemTime = 0;
@@ -73,6 +88,8 @@ vector<process> ScheduleRR(std::vector<process>& processesList) {
 
             }
         }
+
+        //test for idle intervals
         skipDueNotAvailable = true;
         for (int i = 0; i < RR.size(); i++) {
             if (RR[i].getArrivalTime() <= currentTime && RR[i].getRemExecTime() > 0) {
@@ -86,7 +103,11 @@ vector<process> ScheduleRR(std::vector<process>& processesList) {
     }
     return slices;
 }
-
+/**
+ *
+ * @param processesList:  original process list
+ * @returns A vector of scheduled processes.
+ */
 vector<process> SchedulePriority(std::vector<process>& processesList) {
     vector<process> priority = processesList;
     vector<process> executed;
@@ -97,6 +118,7 @@ vector<process> SchedulePriority(std::vector<process>& processesList) {
     int currentTime = priority[0].getArrivalTime();
     process *activeProcess = &priority[0];
     int activeProcessPriority = -1;
+
     while (executed.size() < processesList.size()) {
         for (int i = 1; i <= 5; i++) {
             if (priorities[i].size()) {
@@ -106,6 +128,7 @@ vector<process> SchedulePriority(std::vector<process>& processesList) {
                 }
             }
         }
+        //if none increment current time
         if (activeProcess == nullptr) {
             currentTime += 1;
             continue;
@@ -117,22 +140,32 @@ vector<process> SchedulePriority(std::vector<process>& processesList) {
         activeProcess = nullptr;
     }
     return executed;
-
 }
 
+/**
+ *
+ * @param processesList:  original process list
+ * @returns A vector of scheduled processes.
+ */
 vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
     const int TIME_SLICE = 4;
     vector<process> priorityRR = processesList;
     vector<process> slices;
     //sort based on arrival time
     sort(priorityRR.begin(), priorityRR.end(),[](auto &&l, auto &&r) { return l.getArrivalTime() < r.getArrivalTime(); });
+    //sort to 5 priorities
     vector<vector<process>> priorities = sortPriorities(priorityRR);
+
     int currentTime = priorityRR[0].getArrivalTime();
     process *activeProcess = &priorityRR[0];
     int activeProcessPriority = -1;
+
     while (true) {
+        // flag to break the loop
         bool empty = true;
+        //keep track of current process priority
         activeProcessPriority = -1;
+        //loop on avilable processes from lower to higher priority and register last occurring process only if it has arrived
         for (int i = 1; i <= 5; i++) {
             if (!priorities[i].empty()) {
                 if (priorities[i][0].getArrivalTime() <= currentTime) {
@@ -141,6 +174,7 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
                 }
             }
         }
+        //if none, increment current time and test again for processes arrival
         if (activeProcess == nullptr) {
             currentTime += 1;
             continue;
@@ -151,7 +185,6 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
             slices.push_back(s);
             activeProcess->setRemExecTime(activeProcess->getRemExecTime() - TIME_SLICE);
             s.setRemExecTime(activeProcess->getRemExecTime());
-
             currentTime += TIME_SLICE;
             int newIndex;
             for (newIndex = 0; newIndex < priorities[activeProcessPriority].size(); newIndex++) {
@@ -166,10 +199,12 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
             currentTime += activeProcess->getRemExecTime();
             activeProcess->setRemExecTime(0);
             s.setRemExecTime(0);
+            //remove from vector
             auto it = priorities[activeProcessPriority].begin();
             priorities[activeProcessPriority].erase(it);
         }
 
+        //test if no procesess left
         for (int i = 1; i <= 5; i++) {
             if (priorities[i].size()!=0) {
                 empty = false;
@@ -177,6 +212,7 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
         }
         if(empty)
             break;
+        //rest active process
         activeProcess = nullptr;
     }
     return slices;

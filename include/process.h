@@ -3,6 +3,7 @@
 
 class process {
 private:
+
     int proc_id;
     int cpuBurst;
     int arrivalTime;
@@ -17,6 +18,8 @@ public:
     int getRemExecTime();
     explicit process(int id);
     process(int proc_id, int arrivalTime, int runPeriod);
+    process(int proc_id, int cpuBurst, int arrivalTime, int priority);
+
 
 };
 

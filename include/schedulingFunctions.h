@@ -1,5 +1,8 @@
 #ifndef SCHEDULING_ALGORITHMS_TESTBENCH_SCHEDULINGFUNCTIONS_H
 #define SCHEDULING_ALGORITHMS_TESTBENCH_SCHEDULINGFUNCTIONS_H
+#include "../include/process.h"
+#include <iostream>
+
 
 std::vector<process> ScheduleFCFS(std::vector<process>&);
 std::vector<process> ScheduleSJF(std::vector<process>&);

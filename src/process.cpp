@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "process.h"
+#include "../include/process.h"
 
 // CLASS PROCESS
 
@@ -43,3 +43,10 @@ process::process(int proc_id, int arrivalTime, int runPeriod) {
     this->cpuBurst = runPeriod;
     this->arrivalTime = arrivalTime;
 }
+process::process(int proc_id, int cpuBurst, int arrivalTime, int priority) {
+    this->proc_id =  proc_id;
+    this->cpuBurst = this->remExecTime = cpuBurst;
+    this->arrivalTime = arrivalTime;
+    this->staticPriority = priority;
+}
+

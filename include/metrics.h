@@ -1,10 +1,6 @@
-//
-// Created by babaa on 4/16/2021.
-//
 
 #ifndef SCHEDULING_ALGORITHMS_TESTBENCH_METRICS_H
 #define SCHEDULING_ALGORITHMS_TESTBENCH_METRICS_H
-
 #include <vector>
 #include "process.h"
 
