@@ -39,8 +39,8 @@ SOFTWARE.
 #include <string> // string, to_string
 #include <type_traits> // enable_if, is_arithmetic, is_same, remove_pointer
 #include <vector> // vector
-#define NOMINMAX
-#include <Windows.h>
+#include "../include/helperFunctions.h"
+
 
 namespace samilton {
     // force declaration
@@ -520,13 +520,12 @@ namespace samilton {
                             else {
                                 leftAlignmentIndent = rightAlignmentIndent = leftSpaceInCell / 2;
                             }
-                            HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
                             stream << table._chars.leftRightSimple;
                             ConsoleTable::_fillStreamByChar(stream, ' ', ' ', table._leftIndent + leftAlignmentIndent);
-                            SetConsoleTextAttribute(hConsole, i==0 || i > 15? 15 : i );
+                            setShellColor( i==0 || i > 11? 11 : i);
                             stream << table._tableData[i]->_rowData[j]->_str[k];
                             ConsoleTable::_fillStreamByChar(stream, ' ', ' ', table._rightIndent + rightAlignmentIndent);
-                            SetConsoleTextAttribute(hConsole, 15);
+                            setShellColor(7);
 
                         }
                         else {

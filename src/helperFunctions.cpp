@@ -1,13 +1,15 @@
 #include <iostream>
 #include <map>
-#define NOMINMAX //used to ignore MAX defined in Windows.h
-#include <Windows.h> //coloring output {SetConsoleTextAttribute,HANDLE}
 #include "../include/textTable.h" //lib to print pretty tables in console
 
 #include "../include/schedulingFunctions.h"
 #include "../include/helperFunctions.h"
 #include "../include/metrics.h"
 
+
+#ifdef _WIN32
+#define NOMINMAX //used to ignore MAX defined in Windows.h
+#include <windows.h>
 
 
 /**
@@ -16,10 +18,48 @@
  * @param color:the int value of the color
  *              15 : white, 1:dark blue ..
  */
- void setShellColor(int color) {
+void setShellColor(int color) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, color);
+
 }
+
+
+#else
+
+
+/**
+ * sets the consle tect color based on ANSI
+ *
+ * @param color:the int value of the color
+ *              15 : white, 1:dark blue ..
+ */
+void setShellColor(int color) {
+    std::map<int,std::string> colorMap;
+    colorMap[1]="\033[0;34m";
+    colorMap[2]="\033[0;32m";
+    colorMap[3]="\033[0;36m";
+    colorMap[4]="\033[0;31m";
+    colorMap[5]="\033[0;35m";
+    colorMap[6]="\033[0;33m";
+    colorMap[7]="\033[0;37m";
+    colorMap[8]="\033[1;30m";
+    colorMap[9]="\033[1;34m";
+    colorMap[10]="\033[1;32m";
+    colorMap[11]="\033[1;36m";
+    colorMap[8]="\033[1;31m";
+    colorMap[9]="\033[1;35m";
+    colorMap[10]="\033[1;33m";
+    colorMap[11]="\033[1;37m";
+
+
+        std::cout << colorMap[color] ;
+
+    }
+
+
+#endif
+
 
 /**
  * helper function to read and validate an integer input
@@ -74,7 +114,7 @@ void showMenu() {
  * @param noOfProcesses:  the number of proccess to be created.
  * @returns A Vector of created processes.
  */
- std::vector<process> createProcess(int noOfProcesses) {
+std::vector<process> createProcess(int noOfProcesses) {
     std::vector<process> processesList;
     for (int i = 1; i <= noOfProcesses; i++) {
         process *p = new process(i);
@@ -103,7 +143,7 @@ void showMenu() {
  *
  * @param processesList:  Reference to the processes list on which the operations will be applied.
  */
- void readChoice(std::vector<process> &processesList) {
+void readChoice(std::vector<process> &processesList) {
     using namespace std;
     bool running = true;
     vector<process> FCFS, SJF, Priority, RR, PriorityRR;
@@ -117,40 +157,40 @@ void showMenu() {
             case 2:
                 FCFS = ScheduleFCFS(processesList);
                 printTimeline(FCFS);
-                showMetrics(FCFS, processesList,"FCFS");
+                showMetrics(FCFS, processesList, "FCFS");
                 break;
             case 3:
-                SJF =ScheduleSJF(processesList);
+                SJF = ScheduleSJF(processesList);
                 printTimeline(SJF);
-                showMetrics(SJF, processesList,"SJF");
+                showMetrics(SJF, processesList, "SJF");
 
                 break;
             case 4:
                 RR = ScheduleRR(processesList);
                 printTimeline(RR);
-                showMetrics(RR, processesList,"Round Roben");
+                showMetrics(RR, processesList, "Round Roben");
                 break;
             case 5:
                 Priority = SchedulePriority(processesList);
                 printTimeline(Priority);
-                showMetrics(Priority, processesList,"Priority");
+                showMetrics(Priority, processesList, "Priority");
                 break;
             case 6:
                 PriorityRR = SchedulePriorityWithRR(processesList);
                 printTimeline(PriorityRR);
-                showMetrics(PriorityRR, processesList,"Priority with RR");
+                showMetrics(PriorityRR, processesList, "Priority with RR");
                 break;
             case 7:
                 FCFS = ScheduleFCFS(processesList);
-                SJF =ScheduleSJF(processesList);
+                SJF = ScheduleSJF(processesList);
                 RR = ScheduleRR(processesList);
                 Priority = SchedulePriority(processesList);
                 PriorityRR = SchedulePriorityWithRR(processesList);
-                showMetrics(FCFS, processesList,"FCFS");
-                showMetrics(SJF, processesList,"SJF");
-                showMetrics(RR, processesList,"Round Roben");
-                showMetrics(Priority, processesList,"Priority");
-                showMetrics(PriorityRR, processesList,"Priority with RR");
+                showMetrics(FCFS, processesList, "FCFS");
+                showMetrics(SJF, processesList, "SJF");
+                showMetrics(RR, processesList, "Round Roben");
+                showMetrics(Priority, processesList, "Priority");
+                showMetrics(PriorityRR, processesList, "Priority with RR");
                 break;
             case 8:
                 //exit
@@ -164,7 +204,7 @@ void showMenu() {
  *
  * @param processesList:  Reference to the processes vector to be shown.
  */
- void showProcessesSet(std::vector<process> &processesList) {
+void showProcessesSet(std::vector<process> &processesList) {
     samilton::ConsoleTable table(1, 1, samilton::Alignment::centre);
     table[0][0] = "Process ID";
     table[0][1] = "Arrival Time";
@@ -244,21 +284,21 @@ int ejectIdle(int startTime, int endTime) {
  * @param name:  Name of the algorithm.
  *
  */
-void showMetrics(std::vector<process> plist, std::vector<process> &processesList, std::string name ) {
+void showMetrics(std::vector<process> plist, std::vector<process> &processesList, std::string name) {
     //init table
     samilton::ConsoleTable table(1, 1, samilton::Alignment::centre);
     //init array of maps
-    std::map<int, int> metrics [3];
-    metrics[0] = responseTime(plist,processesList );
+    std::map<int, int> metrics[3];
+    metrics[0] = responseTime(plist, processesList);
     metrics[1] = turnAroundTime(plist, processesList);
-    metrics[2] = waitingTime(processesList,metrics[1]);
+    metrics[2] = waitingTime(processesList, metrics[1]);
     int throughputVal = throughput(plist, processesList);
 
     int index = 1;
     //to find min,max and avg
-    for(auto metric : metrics){
-        double min=INT32_MAX,max=0,avg=0;
-        for (auto currentEntry = metric.begin();currentEntry != metric.end();++currentEntry) {
+    for (auto metric : metrics) {
+        double min = INT32_MAX, max = 0, avg = 0;
+        for (auto currentEntry = metric.begin(); currentEntry != metric.end(); ++currentEntry) {
             if (currentEntry->second > max) {
                 max = currentEntry->second;
             }
@@ -268,11 +308,11 @@ void showMetrics(std::vector<process> plist, std::vector<process> &processesList
             avg += currentEntry->second;
         }
         avg /= metric.size();
-        table[index][1]=min;
-        table[index][2]=avg;
-        table[index++][3]=max;
+        table[index][1] = min;
+        table[index][2] = avg;
+        table[index++][3] = max;
     }
-    table[4][2] = std::to_string(throughputVal) + "/10 ms";
+    table[4][2] = std::to_string(throughputVal) + "per 10ms";
 
 
     table[0][0] = name;
