@@ -1,6 +1,7 @@
 #include <iostream> //cout exit
 #include <map>
 #include <vector>
+#include <algorithm>
 #include "../include/process.h"
 
 /**
