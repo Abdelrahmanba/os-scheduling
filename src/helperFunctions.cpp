@@ -289,6 +289,7 @@ void showMetrics(std::vector<process> plist, std::vector<process> &processesList
     samilton::ConsoleTable table(1, 1, samilton::Alignment::centre);
     //init array of maps
     std::map<int, int> metrics[3];
+
     metrics[0] = responseTime(plist, processesList);
     metrics[1] = turnAroundTime(plist, processesList);
     metrics[2] = waitingTime(processesList, metrics[1]);

@@ -17,20 +17,21 @@ std::map<int, int> waitingTime(std::vector<process> &processesList, std::map<int
     //we want to find burst time
     std::map<int, int> waitingTime;
     std::map<int, int>::iterator it;
-    for(it=turnAroundTime.begin(); it!=turnAroundTime.end(); ++it){
+    for (it = turnAroundTime.begin(); it != turnAroundTime.end(); ++it) {
         int pid = it->first;
         int turnAround = it->second;
         //find process burst time
-        auto originalProcess = find_if(processesList.begin(), processesList.end(), [&pid](const process& obj) {return obj.getProcId() == pid;});
+        auto originalProcess = find_if(processesList.begin(), processesList.end(),
+                                       [&pid](const process &obj) { return obj.getProcId() == pid; });
         //if id is not defined for any reason -> crash
-        if (originalProcess == processesList.end()){
-            std::cout<<"Unexpected error happened";
+        if (originalProcess == processesList.end()) {
+            std::cout << "Unexpected error happened";
             exit(1);
         }
-        waitingTime[pid]= turnAround - originalProcess->getCpuBurst();
+        waitingTime[pid] = turnAround - originalProcess->getCpuBurst();
     }
 
-    return waitingTime ;
+    return waitingTime;
 }
 
 /**
@@ -41,26 +42,27 @@ std::map<int, int> waitingTime(std::vector<process> &processesList, std::map<int
  * @returns A map of process id as key and response time.
  */
 std::map<int, int> responseTime(std::vector<process> plist, std::vector<process> &processesList) {
-    std::map<int,int> r;
+    std::map<int, int> r;
     std::vector<int> processesId;
 
     int currentTime = plist[0].getArrivalTime();
 
-    for(int i = 0; i < plist.size(); i++) {
+    for (int i = 0; i < plist.size(); i++) {
         int pId = plist[i].getProcId();
         //check if process already executed for preemptive scheduling then skip it
-        if ( r.count(pId) == 0) {
+        if (r.count(pId) == 0) {
             //if not set initial response time to 0
-            r[pId]=0;
+            r[pId] = 0;
         } else {
             currentTime += plist[i].getCpuBurst();
             continue;
         }
         //find original arrival time
-        auto originalProcess = find_if(processesList.begin(), processesList.end(), [&pId](const process& obj) {return obj.getProcId() == pId;});
+        auto originalProcess = find_if(processesList.begin(), processesList.end(),
+                                       [&pId](const process &obj) { return obj.getProcId() == pId; });
         //if id is not defined for any reason -> crash
-        if (originalProcess == processesList.end()){
-            std::cout<<"Unexpected error happened";
+        if (originalProcess == processesList.end()) {
+            std::cout << "Unexpected error happened";
             exit(1);
         }
         int arrivalTime = originalProcess->getArrivalTime();
@@ -71,7 +73,7 @@ std::map<int, int> responseTime(std::vector<process> plist, std::vector<process>
             currentTime = plist[i + 1].getArrivalTime();
     }
     std::map<int, int>::iterator it;
-    return r ;
+    return r;
 }
 
 /**
@@ -86,38 +88,39 @@ std::map<int, int> turnAroundTime(std::vector<process> plist, std::vector<proces
     //we want to find End time
     std::map<int, int> turnAroundTime;
 
-    for(int i = 0; i < plist.size(); i++) {
+    for (int i = 0; i < plist.size(); i++) {
         int pId = plist[i].getProcId();
-        if ( turnAroundTime.count(pId) == 0) {
-            turnAroundTime[pId]=0;
+        if (turnAroundTime.count(pId) == 0) {
+            turnAroundTime[pId] = 0;
         } else {
             continue;
         }
         //find original arrival time
-        auto originalProcess = find_if(processesList.begin(), processesList.end(), [&pId](const process& obj) {return obj.getProcId() == pId;});
+        auto originalProcess = find_if(processesList.begin(), processesList.end(),
+                                       [&pId](const process &obj) { return obj.getProcId() == pId; });
         //if id is not defined for any reason -> crash
-        if (originalProcess == processesList.end()){
-            std::cout<<"Unexpected error happened";
+        if (originalProcess == processesList.end()) {
+            std::cout << "Unexpected error happened";
             exit(1);
         }
-        int arrivalTime =originalProcess->getArrivalTime();
+        int arrivalTime = originalProcess->getArrivalTime();
 
         //find exist time
         int currentTime = plist[0].getArrivalTime();
-        int exitTime = arrivalTime + originalProcess ->getCpuBurst();
+        int exitTime = arrivalTime + originalProcess->getCpuBurst();
         // check if process excuted after first time for preemptive scheduling.
-        for(int j = 0; j < plist.size(); j++){
+        for (int j = 0; j < plist.size(); j++) {
             currentTime += plist[j].getCpuBurst();
-            if(plist[j].getProcId()==pId){
+            if (plist[j].getProcId() == pId) {
                 exitTime = currentTime;
             }
             //skip Idle periods
             if (j + 1 < plist.size() && currentTime < plist[j + 1].getArrivalTime())
                 currentTime = plist[j + 1].getArrivalTime();
         }
-        turnAroundTime[pId]= exitTime - arrivalTime;
+        turnAroundTime[pId] = exitTime - arrivalTime;
     }
-    return turnAroundTime ;
+    return turnAroundTime;
 }
 
 /**
@@ -130,20 +133,27 @@ std::map<int, int> turnAroundTime(std::vector<process> plist, std::vector<proces
 int throughput(std::vector<process> plist, std::vector<process> &processesList) {
     const int THROUGHPUT_TIME = 10;
     //init
-    int throughput =0;
+    int throughput = 0;
     //scanning interval
     int interval = plist[0].getArrivalTime() + THROUGHPUT_TIME;
     int currentTime = plist[0].getArrivalTime();
-    int index = 0 ;
-    while(currentTime <= interval){
-       auto activeProcess = plist[index++];
-       if(currentTime + activeProcess.getRemExecTime() <= interval){
-           throughput++;
-       }
-        currentTime += activeProcess.getRemExecTime();
-       //skip idle intervals
+    int index = 0;
+    std::vector<int> exec;
+    while (currentTime <= interval) {
+        auto activeProcess = plist[index++];
+
+        if (currentTime + activeProcess.getCpuBurst() <= interval) {
+            if (!(std::find(exec.begin(), exec.end(), activeProcess.getProcId()) != exec.end()))
+                if (activeProcess.getCpuBurst() >= activeProcess.getRemExecTime()) {
+                    throughput++;
+                    exec.push_back(activeProcess.getProcId());
+                }
+        }
+        currentTime += activeProcess.getCpuBurst();
+
+        //skip idle intervals
         if (index + 1 < plist.size() && currentTime < plist[index + 1].getArrivalTime())
             currentTime = plist[index + 1].getArrivalTime();
     }
-    return throughput ;
+    return throughput;
 }

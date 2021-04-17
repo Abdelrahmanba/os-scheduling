@@ -74,16 +74,17 @@ vector<process> ScheduleRR(std::vector<process>& processesList) {
             if (RR[i].getArrivalTime() <= currentTime) {
                 if (RR[i].getRemExecTime() > TIME_SLICE) {
                     process slice (RR[i].getProcId(), currentTime, TIME_SLICE);
-                    slices.push_back(slice);
                     RR[i].setRemExecTime(RR[i].getRemExecTime() - TIME_SLICE);
                     slice.setRemExecTime(RR[i].getRemExecTime());
+                    slices.push_back(slice);
                     currentTime += TIME_SLICE;
                 } else if (RR[i].getRemExecTime() <= TIME_SLICE && RR[i].getRemExecTime() > 0) {
                     process slice(RR[i].getProcId(), currentTime, RR[i].getRemExecTime());
-                    slices.push_back(slice);
                     currentTime += RR[i].getRemExecTime();
                     RR[i].setRemExecTime(0);
                     slice.setRemExecTime(0);
+                    slices.push_back(slice);
+
                 }
 
             }
@@ -182,9 +183,9 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
 
         if (activeProcess->getRemExecTime() > TIME_SLICE) {
             process s(activeProcess->getProcId(), currentTime, TIME_SLICE);
-            slices.push_back(s);
             activeProcess->setRemExecTime(activeProcess->getRemExecTime() - TIME_SLICE);
             s.setRemExecTime(activeProcess->getRemExecTime());
+            slices.push_back(s);
             currentTime += TIME_SLICE;
             int newIndex;
             for (newIndex = 0; newIndex < priorities[activeProcessPriority].size(); newIndex++) {
@@ -195,10 +196,11 @@ vector<process> SchedulePriorityWithRR(std::vector<process>& processesList) {
             rotate(priorities[activeProcessPriority].begin(), priorities[activeProcessPriority].begin() + 1, priorities[activeProcessPriority].begin() + newIndex + 1);
         } else if (activeProcess->getRemExecTime() <= TIME_SLICE && activeProcess->getRemExecTime() > 0) {
             process s(activeProcess->getProcId(), currentTime, activeProcess->getRemExecTime());
-            slices.push_back(s);
             currentTime += activeProcess->getRemExecTime();
             activeProcess->setRemExecTime(0);
             s.setRemExecTime(0);
+            slices.push_back(s);
+
             //remove from vector
             auto it = priorities[activeProcessPriority].begin();
             priorities[activeProcessPriority].erase(it);
